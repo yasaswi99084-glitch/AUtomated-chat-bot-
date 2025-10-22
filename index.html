@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Byte Buddy Assistant</title>
+    <link rel="icon" href="data:,">
+    <style>
+        :root {
+            --primary-color: #10a37f;
+            --primary-dark: #0d8266;
+            --secondary-color: #6e6eff;
+            --secondary-dark: #5a5ae6;
+            --text-color: #e0e0e0;
+            --text-dark: #b0b0b0;
+            --bg-color: #121212;
+            --card-color: #1e1e1e;
+            --border-color: #333;
+            --error-color: #ff6b6b;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--card-color);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        
+        .chat-header {
+            background-color: var(--card-color);
+            color: var(--text-color);
+            padding: 18px 24px;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .chat-header::before {
+            content: "";
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: var(--primary-color);
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'%3E%3C/path%3E%3C/svg%3E") no-repeat center;
+            margin-right: 12px;
+        }
+        
+        #chatbox {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .bot-message {
+            align-self: flex-start;
+            background-color: var(--card-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 4px;
+        }
+        
+        .input-container {
+            display: flex;
+            padding: 16px;
+            background-color: var(--card-color);
+            border-top: 1px solid var(--border-color);
+            gap: 12px;
+        }
+        
+        #userInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            font-size: 16px;
+            outline: none;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: border-color 0.2s;
+        }
+        
+        #userInput:focus {
+            border-color: var(--primary-color);
+        }
+        
+        .send-button {
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .send-button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .ticket-button {
+            padding: 12px 16px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .ticket-button:hover {
+            background-color: var(--secondary-dark);
+        }
+        
+        .ticket-button::before {
+            content: "";
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background-color: white;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z'%3E%3C/path%3E%3Cline x1='9' y1='9' x2='15' y2='9'%3E%3C/line%3E%3Cline x1='9' y1='13' x2='15' y2='13'%3E%3C/line%3E%3C/svg%3E") no-repeat center;
+        }
+        
+        .message-role {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+        
+        .message-content {
+            font-size: 15px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 600px) {
+            .chat-container {
+                height: 100vh;
+                border-radius: 0;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+            
+            .input-container {
+                flex-wrap: wrap;
+            }
+            
+            .ticket-button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div style="display: flex; align-items: center;">
+                <span></span> <!-- This is for the pseudo-element icon -->
+                Byte Buddy Assistant
+            </div>
+            <button class="ticket-button" onclick="raiseTicket()">Raise Ticket</button>
+        </div>
+        <div id="chatbox"></div>
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Type your message..." autofocus>
+            <button class="send-button" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById("userInput");
+            const message = userInput.value.trim();
+            if (!message) return;
+    
+            const chatbox = document.getElementById("chatbox");
+            
+            // Display user message
+            chatbox.innerHTML += `
+                <div class="message user-message">
+                    <div class="message-role">You</div>
+                    <div class="message-content">${message}</div>
+                </div>
+            `;
+            userInput.value = "";
+            
+            // Scroll to bottom
+            chatbox.scrollTop = chatbox.scrollHeight;
+    
+            // Check if user mentions "not resolved" (case insensitive)
+            if (message.toLowerCase().includes("not resolved")) {
+                raiseTicket();
+                return; // Don't proceed to API call
+            }
+    
+            try {
+                // Call backend API
+                const response = await fetch("http://localhost:5000/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: message })
+                });
+    
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
+                }
+    
+                const data = await response.json();
+                chatbox.innerHTML += `
+                    <div class="message bot-message">
+                        <div class="message-role">byte buddy</div>
+                        <div class="message-content">${data.reply}</div>
+                    </div>
+                `;
+                chatbox.scrollTop = chatbox.scrollHeight;
+            } catch (error) {
+                console.error("Error:", error);
+                chatbox.innerHTML += `
+                    <div class="message bot-message" style="color: var(--error-color)">
+                        <div class="message-role">byte buddy</div>
+                        <div class="message-content">Sorry, I'm having trouble connecting right now.</div>
+                    </div>
+                `;
+                chatbox.scrollTop = chatbox.scrollHeight;
+            }
+        }
+    
+        function raiseTicket() {
+            const chatbox = document.getElementById("chatbox");
+            const ticketMessage = `
+                <div class="message bot-message">
+                    <div class="message-role">Support</div>
+                    <div class="message-content">
+                        <p>I've created a support ticket for your issue (Ticket #${Math.floor(1000 + Math.random() * 9000)}).</p>
+                        <p>Our team will contact you shortly. In the meantime, you can try:</p>
+                        <ul>
+                            <li>Restarting your router</li>
+                            <li>Checking cable connections</li>
+                            <li>Testing on another device</li>
+                        </ul>
+                        <p>Would you like me to guide you through any of these troubleshooting steps?</p>
+                    </div>
+                </div>
+            `;
+            
+            chatbox.innerHTML += ticketMessage;
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+    
+        // Send message when Enter key is pressed
+        document.getElementById("userInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
