@@ -5,7 +5,7 @@ import anthropic
 app = Flask(__name__)
 CORS(app)  # Allow frontend to access this API
 
-ANTHROPIC_API_KEY = "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"
+ANTHROPIC_API_KEY = ""
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 @app.route("/chat", methods=["POST"])
@@ -21,4 +21,5 @@ def chat():
     return jsonify({"reply": response.content[0].text})
 
 if __name__ == "__main__":
+
     app.run(port=5000)
